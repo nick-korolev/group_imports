@@ -3,6 +3,7 @@ const import_parser = @import("./import_parser/import_parser.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
     defer {
         const leaked = gpa.deinit();
         switch (leaked) {

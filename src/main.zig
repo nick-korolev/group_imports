@@ -26,6 +26,6 @@ pub fn main() !void {
     defer arena.deinit();
     const arena_allocator = arena.allocator();
 
-    const str: []const u8 = "import { App }  from './route' ";
+    const str: []const u8 = "import { App, App1 }  from './route' ";
     try import_parser.parse(arena_allocator, &str);
 }

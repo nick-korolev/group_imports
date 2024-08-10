@@ -70,6 +70,11 @@ fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
         if (prev_token.token_type == TokenType.SpecifierOpen) {
             return TokenType.Specifier;
         }
+
+        if (prev_token.token_type == TokenType.Specifier) {
+            return TokenType.Specifier;
+        }
+
         if (prev_token.token_type == TokenType.From) {
             return TokenType.Source;
         }

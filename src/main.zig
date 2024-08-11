@@ -1,5 +1,6 @@
 const std = @import("std");
 const import_parser = @import("./import_parser/import_parser.zig");
+const file_reader = @import("./file_reader/file_reader.zig");
 
 pub fn main() !void {
     const start_time = std.time.milliTimestamp();
@@ -26,6 +27,6 @@ pub fn main() !void {
     defer arena.deinit();
     const arena_allocator = arena.allocator();
 
-    const str: []const u8 = "import { App, App1 }  from './route' ";
-    try import_parser.parse(arena_allocator, &str);
+    const file = try file_reader.read_file(arena_allocator, "./data/imports.tsx");
+    try import_parser.parse(arena_allocator, &file);
 }

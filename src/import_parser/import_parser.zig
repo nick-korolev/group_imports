@@ -2,9 +2,10 @@ const std = @import("std");
 
 const TokenType = enum {
     Import,
-    SpecifierOpen,
-    SpecifierClose,
-    Specifier,
+    NamedSpecifierOpen,
+    NamedSpecifierClose,
+    NamedSpecifier,
+    Asterisk,
     NamespaceSpecifer,
     DefaultSpecifier,
     From,
@@ -45,38 +46,53 @@ fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
         const prev_token = ptr.*;
         if (std.mem.eql(u8, val, "{")) {
             if (prev_token.token_type == TokenType.Import) {
-                return TokenType.SpecifierOpen;
+                return TokenType.NamedSpecifierOpen;
             }
         }
 
         if (std.mem.eql(u8, val, "}")) {
-            if (prev_token.token_type == TokenType.Specifier) {
-                return TokenType.SpecifierClose;
+            if (prev_token.token_type == TokenType.NamedSpecifier) {
+                return TokenType.NamedSpecifierClose;
+            }
+        }
+
+        if (std.mem.eql(u8, val, "*")) {
+            if (prev_token.token_type == TokenType.Import) {
+                return TokenType.Asterisk;
             }
         }
 
         if (std.mem.eql(u8, val, "as")) {
-            if (prev_token.token_type == TokenType.Specifier) {
+            if (prev_token.token_type == TokenType.Asterisk) {
                 return TokenType.As;
             }
         }
 
         if (std.mem.eql(u8, val, "from")) {
             return switch (prev_token.token_type) {
-                TokenType.SpecifierClose, TokenType.DefaultSpecifier, TokenType.NamespaceSpecifer => TokenType.From,
+                TokenType.NamedSpecifierClose, TokenType.DefaultSpecifier, TokenType.NamespaceSpecifer => TokenType.From,
                 else => null,
             };
         }
-        if (prev_token.token_type == TokenType.SpecifierOpen) {
-            return TokenType.Specifier;
+
+        if (prev_token.token_type == TokenType.NamedSpecifierOpen) {
+            return TokenType.NamedSpecifier;
         }
 
-        if (prev_token.token_type == TokenType.Specifier) {
-            return TokenType.Specifier;
+        if (prev_token.token_type == TokenType.NamedSpecifier) {
+            return TokenType.NamedSpecifier;
+        }
+
+        if (prev_token.token_type == TokenType.As) {
+            return TokenType.NamespaceSpecifer;
         }
 
         if (prev_token.token_type == TokenType.From) {
             return TokenType.Source;
+        }
+
+        if (prev_token.token_type == TokenType.Import) {
+            return TokenType.DefaultSpecifier;
         }
     }
 
@@ -86,24 +102,21 @@ fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
 pub fn parse(allocator: std.mem.Allocator, content: *const []const u8) !void {
     std.debug.print("content: {s}\n", .{content.*});
     var tokens: std.ArrayList(Token) = std.ArrayList(Token).init(allocator);
-    var token_iterator = std.mem.tokenizeAny(u8, content.*, " ");
-    var prev_index = token_iterator.index;
+    var token_iterator = std.mem.tokenizeAny(u8, content.*, " ,;\n");
 
     while (token_iterator.next()) |val| {
-        // std.debug.print("token: {s}, index: {any}\n", .{ val, token_iterator.index });
+        std.debug.print("token: {s}, index: {any}\n", .{ val, token_iterator.index });
         const token_type = if (tokens.items.len > 0)
             get_token_type(val, &tokens.items[tokens.items.len - 1])
         else
             get_token_type(val, null);
 
         if (token_type) |token_type_val| {
-            try tokens.append(.{ .start = prev_index, .end = token_iterator.index, .token_type = token_type_val, .raw_value = val });
+            try tokens.append(.{ .start = token_iterator.index - val.len, .end = token_iterator.index, .token_type = token_type_val, .raw_value = val });
         }
-        // @TODO implement start
-        prev_index = token_iterator.index;
     }
 
     for (tokens.items) |token| {
-        std.debug.print("token: {}\n", .{token});
+        std.debug.print("{}\n", .{token});
     }
 }

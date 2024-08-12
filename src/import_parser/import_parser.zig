@@ -36,7 +36,7 @@ pub const Token = struct {
         });
     }
 };
-
+// @todo refactor
 fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
     if (std.mem.eql(u8, val, "import")) {
         return TokenType.Import;

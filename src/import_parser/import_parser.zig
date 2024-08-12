@@ -13,7 +13,7 @@ const TokenType = enum {
     As,
 };
 
-const Token = struct {
+pub const Token = struct {
     start: usize,
     end: usize,
     token_type: TokenType,
@@ -99,13 +99,13 @@ fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
     return null;
 }
 
-pub fn parse(allocator: std.mem.Allocator, content: *const []const u8) !void {
+pub fn parse(allocator: std.mem.Allocator, content: *const []const u8) !std.ArrayList(Token) {
     std.debug.print("content: {s}\n", .{content.*});
     var tokens: std.ArrayList(Token) = std.ArrayList(Token).init(allocator);
     var token_iterator = std.mem.tokenizeAny(u8, content.*, " ,;\n");
 
     while (token_iterator.next()) |val| {
-        std.debug.print("token: {s}, index: {any}\n", .{ val, token_iterator.index });
+        // std.debug.print("token: {s}, index: {any}\n", .{ val, token_iterator.index });
         const token_type = if (tokens.items.len > 0)
             get_token_type(val, &tokens.items[tokens.items.len - 1])
         else
@@ -115,8 +115,5 @@ pub fn parse(allocator: std.mem.Allocator, content: *const []const u8) !void {
             try tokens.append(.{ .start = token_iterator.index - val.len, .end = token_iterator.index, .token_type = token_type_val, .raw_value = val });
         }
     }
-
-    for (tokens.items) |token| {
-        std.debug.print("{}\n", .{token});
-    }
+    return tokens;
 }

@@ -1,6 +1,7 @@
 const std = @import("std");
 const import_parser = @import("./import_parser/import_parser.zig");
 const file_reader = @import("./file_reader/file_reader.zig");
+const ast = @import("./ast/ast.zig");
 
 pub fn main() !void {
     const start_time = std.time.milliTimestamp();
@@ -28,5 +29,8 @@ pub fn main() !void {
     const arena_allocator = arena.allocator();
 
     const file = try file_reader.read_file(arena_allocator, "./data/imports.tsx");
-    try import_parser.parse(arena_allocator, &file);
+    const tokens = try import_parser.parse(arena_allocator, &file);
+    defer tokens.deinit();
+
+    try ast.build(arena_allocator, &tokens);
 }

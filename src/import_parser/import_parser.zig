@@ -1,12 +1,12 @@
 const std = @import("std");
 
-const TokenType = enum {
+pub const TokenType = enum {
     Import,
     NamedSpecifierOpen,
     NamedSpecifierClose,
     NamedSpecifier,
     Asterisk,
-    NamespaceSpecifer,
+    NamespaceSpecifier,
     DefaultSpecifier,
     From,
     Source,
@@ -70,7 +70,7 @@ fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
 
         if (std.mem.eql(u8, val, "from")) {
             return switch (prev_token.token_type) {
-                TokenType.NamedSpecifierClose, TokenType.DefaultSpecifier, TokenType.NamespaceSpecifer => TokenType.From,
+                TokenType.NamedSpecifierClose, TokenType.DefaultSpecifier, TokenType.NamespaceSpecifier => TokenType.From,
                 else => null,
             };
         }
@@ -84,7 +84,7 @@ fn get_token_type(val: []const u8, prev_token_ptr: ?*const Token) ?TokenType {
         }
 
         if (prev_token.token_type == TokenType.As) {
-            return TokenType.NamespaceSpecifer;
+            return TokenType.NamespaceSpecifier;
         }
 
         if (prev_token.token_type == TokenType.From) {

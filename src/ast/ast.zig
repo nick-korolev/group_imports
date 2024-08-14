@@ -61,7 +61,8 @@ pub fn build(allocator: std.mem.Allocator, tokens: *const std.ArrayList(import_p
             .value = "",
         },
     };
-    for (tokens.*.items) |token| {
+    for (0..tokens.*.items.len) |idx| {
+        const token = tokens.*.items[idx];
         std.debug.print("{}\n", .{token});
         if (token.token_type == import_parser.TokenType.Import) {
             current_import_declaration_ast.start = token.start;
@@ -70,24 +71,29 @@ pub fn build(allocator: std.mem.Allocator, tokens: *const std.ArrayList(import_p
 
         if (token.token_type == import_parser.TokenType.NamedSpecifier or token.token_type == import_parser.TokenType.NamespaceSpecifier or token.token_type == import_parser.TokenType.DefaultSpecifier) {
             switch (token.token_type) {
-                .NamedSpecifier => try current_import_declaration_ast.specifiers.append(SpecifierUnionStruct{
-                    .ImportSpecifier = ImportSpecifierStruct{
-                        .start = token.start,
-                        .end = token.end,
-                        // @todo fix
-                        .imported = IdentifierStruct{
+                .NamedSpecifier => {
+                    const next_token: ?import_parser.Token = if ((idx + 1) < tokens.*.items.len) tokens.*.items[idx + 1] else null;
+                    var local_token = token;
+                    if (next_token.?.token_type == import_parser.TokenType.As and (idx + 2) < tokens.*.items.len) {
+                        local_token = tokens.*.items[idx + 2];
+                    }
+                    try current_import_declaration_ast.specifiers.append(SpecifierUnionStruct{
+                        .ImportSpecifier = ImportSpecifierStruct{
                             .start = token.start,
                             .end = token.end,
-                            .name = token.raw_value,
+                            .imported = IdentifierStruct{
+                                .start = token.start,
+                                .end = token.end,
+                                .name = token.raw_value,
+                            },
+                            .local = IdentifierStruct{
+                                .start = local_token.start,
+                                .end = local_token.end,
+                                .name = local_token.raw_value,
+                            },
                         },
-                        // @todo fix
-                        .local = IdentifierStruct{
-                            .start = token.start,
-                            .end = token.end,
-                            .name = token.raw_value,
-                        },
-                    },
-                }),
+                    });
+                },
                 .NamespaceSpecifier => try current_import_declaration_ast.specifiers.append(SpecifierUnionStruct{
                     .ImportNamespaceSpecifier = ImportNamespaceSpecifierStruct{ .start = token.start, .end = token.end, .local = IdentifierStruct{
                         .start = token.start,

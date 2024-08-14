@@ -111,7 +111,6 @@ pub fn parse(allocator: std.mem.Allocator, content: *const []const u8) !std.Arra
                 .DefaultSpecifier => import_type = ImportType.DefaultImport,
                 else => {},
             }
-            std.debug.print("import_type: {?}\n", .{import_type});
             try tokens.append(.{ .start = token_iterator.index - val.len, .end = token_iterator.index, .token_type = token_type_val, .raw_value = val });
         }
     }

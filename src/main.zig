@@ -32,5 +32,18 @@ pub fn main() !void {
     const tokens = try import_parser.parse(arena_allocator, &file);
     defer tokens.deinit();
 
-    try ast.build(arena_allocator, &tokens);
+    const imports = try ast.build(arena_allocator, &tokens);
+    defer imports.deinit();
+
+    for (imports.items) |import| {
+        std.debug.print("import {s} start: {any} end: {any} from : {s} \n", .{ import.type, import.start, import.end, import.source.raw_value });
+        std.debug.print("  Specifiers:\n", .{});
+        for (import.specifiers.items) |specifier| {
+            switch (specifier) {
+                .ImportSpecifier => |s| std.debug.print("    ImportSpecifier: imported={s}, local={s}\n", .{ s.imported.name, s.local.name }),
+                .ImportNamespaceSpecifier => |s| std.debug.print("    ImportNamespaceSpecifier: local={s}\n", .{s.local.name}),
+                .ImportDefaultSpecifier => |s| std.debug.print("    ImportDefaultSpecifier: local={s}\n", .{s.local.name}),
+            }
+        }
+    }
 }

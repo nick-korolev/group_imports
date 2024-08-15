@@ -11,6 +11,7 @@ pub const TokenType = enum {
     DefaultSpecifier,
     From,
     Source,
+    AsyncSource,
     As,
 };
 
@@ -83,7 +84,15 @@ fn get_token_type(val: []const u8, prev_token: ?*const Token, import_type: ?Impo
                 return TokenType.NamespaceSpecifier;
             },
             .From => .Source,
-            .Import => .DefaultSpecifier,
+            .Import => {
+                if (std.mem.startsWith(u8, val, "'") or std.mem.startsWith(u8, val, "\"")) {
+                    return TokenType.Source;
+                }
+                if (std.mem.startsWith(u8, val, "(") and std.mem.endsWith(u8, val, ")")) {
+                    return TokenType.AsyncSource;
+                }
+                return TokenType.DefaultSpecifier;
+            },
             else => null,
         };
     }

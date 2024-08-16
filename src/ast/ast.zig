@@ -39,7 +39,7 @@ const SourceStruct = struct {
     raw_value: []const u8,
 };
 
-const ImportDeclarationAst = struct {
+pub const ImportDeclarationAst = struct {
     type: []const u8 = "ImportDeclaration",
     start: usize,
     end: usize,

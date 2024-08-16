@@ -2,6 +2,7 @@ const std = @import("std");
 const import_parser = @import("./import_parser/import_parser.zig");
 const file_reader = @import("./file_reader/file_reader.zig");
 const ast = @import("./ast/ast.zig");
+const formatter = @import("./formatter/fomatter.zig");
 
 pub fn main() !void {
     const start_time = std.time.milliTimestamp();
@@ -35,15 +36,5 @@ pub fn main() !void {
     const imports = try ast.build(arena_allocator, &tokens);
     defer imports.deinit();
 
-    for (imports.items) |import| {
-        std.debug.print("import {s} start: {any} end: {any} from : {s} \n", .{ import.type, import.start, import.end, import.source.raw_value });
-        std.debug.print("  Specifiers:\n", .{});
-        for (import.specifiers.items) |specifier| {
-            switch (specifier) {
-                .ImportSpecifier => |s| std.debug.print("    ImportSpecifier: imported={s}, local={s}\n", .{ s.imported.name, s.local.name }),
-                .ImportNamespaceSpecifier => |s| std.debug.print("    ImportNamespaceSpecifier: local={s}\n", .{s.local.name}),
-                .ImportDefaultSpecifier => |s| std.debug.print("    ImportDefaultSpecifier: local={s}\n", .{s.local.name}),
-            }
-        }
-    }
+    try formatter.format(&imports);
 }

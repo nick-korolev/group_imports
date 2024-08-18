@@ -11,6 +11,7 @@ pub fn format(imports: *const std.ArrayList(ImportDeclarationAst)) !void {
     for (imports.*.items) |import| {
         std.debug.print("import {s} start: {any} end: {any} from : {s} \n", .{ import.type, import.start, import.end, import.source.raw_value });
         std.debug.print("  Specifiers:\n", .{});
+
         for (import.specifiers.items) |specifier| {
             switch (specifier) {
                 .ImportSpecifier => |s| std.debug.print("    ImportSpecifier: imported={s}, local={s}\n", .{ s.imported.name, s.local.name }),

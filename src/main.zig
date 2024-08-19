@@ -2,7 +2,7 @@ const std = @import("std");
 const import_parser = @import("./import_parser/import_parser.zig");
 const file_reader = @import("./file_reader/file_reader.zig");
 const ast = @import("./ast/ast.zig");
-const formatter = @import("./formatter/fomatter.zig");
+const formatter = @import("./formatter/formatter.zig");
 
 pub fn main() !void {
     const start_time = std.time.milliTimestamp();
@@ -36,5 +36,5 @@ pub fn main() !void {
     const imports = try ast.build(arena_allocator, &tokens);
     defer imports.deinit();
 
-    try formatter.format(&imports);
+    try formatter.format(arena_allocator, &imports);
 }

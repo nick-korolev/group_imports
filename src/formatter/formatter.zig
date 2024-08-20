@@ -47,7 +47,8 @@ fn write(allocator: std.mem.Allocator, imports: *const std.ArrayList(ImportDecla
                 .ImportDefaultSpecifier => |s| try std.fmt.format(buffer.writer(), "{s}", .{s.local.name}),
             }
         }
-        try std.fmt.format(buffer.writer(), " from {s} \n", .{import.source.raw_value});
+        const from = if (import.specifiers.items.len > 0) " from " else "";
+        try std.fmt.format(buffer.writer(), "{s}{s} \n", .{ from, import.source.raw_value });
     }
     try std.fs.cwd().writeFile(.{
         .sub_path = "./data/_imports.tsx",

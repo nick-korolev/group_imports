@@ -31,11 +31,20 @@ fn write(allocator: std.mem.Allocator, imports: *const std.ArrayList(ImportDecla
 
     for (imports.*.items) |import| {
         try buffer.appendSlice("import ");
-        for (import.specifiers.items) |specifier| {
+        for (0..import.specifiers.items.len) |idx| {
+            const is_last = idx == import.specifiers.items.len - 1;
+            const is_first = idx == 0;
+            const specifier = import.specifiers.items[idx];
             switch (specifier) {
-                .ImportSpecifier => |s| try std.fmt.format(buffer.writer(), "{{ {s} as {s} }}, ", .{ s.imported.name, s.local.name }),
-                .ImportNamespaceSpecifier => |s| try std.fmt.format(buffer.writer(), "* as {s}, ", .{s.local.name}),
-                .ImportDefaultSpecifier => |s| try std.fmt.format(buffer.writer(), "{s}, ", .{s.local.name}),
+                .ImportSpecifier => |s| {
+                    const separator: []const u8 = if (!is_last) ", " else "";
+                    const prefix: []const u8 = if (is_first) "{ " else "";
+                    const suffix: []const u8 = if (is_last) " }" else "";
+                    const specifier_value = if (std.mem.eql(u8, s.imported.name, s.local.name)) try std.fmt.allocPrint(allocator, "{s}", .{s.imported.name}) else try std.fmt.allocPrint(allocator, "{s} as {s}", .{ s.imported.name, s.local.name });
+                    try std.fmt.format(buffer.writer(), "{s}{s}{s}{s}", .{ prefix, specifier_value, separator, suffix });
+                },
+                .ImportNamespaceSpecifier => |s| try std.fmt.format(buffer.writer(), "* as {s}", .{s.local.name}),
+                .ImportDefaultSpecifier => |s| try std.fmt.format(buffer.writer(), "{s}", .{s.local.name}),
             }
         }
         try std.fmt.format(buffer.writer(), " from {s} \n", .{import.source.raw_value});

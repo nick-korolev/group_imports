@@ -1,32 +1,7 @@
 const std = @import("std");
 const ImportDeclarationAst = @import("../ast/ast.zig").ImportDeclarationAst;
 
-fn getFirstPattern(source: []const u8) []const u8 {
-    if (std.mem.indexOf(u8, source, "/")) |slash_index| {
-        return source[0 .. slash_index + 1];
-    }
-    return source;
-}
-
-fn compare(context: void, a: ImportDeclarationAst, b: ImportDeclarationAst) bool {
-    _ = context;
-    const pattern_a = getFirstPattern(a.source.value);
-    const pattern_b = getFirstPattern(b.source.value);
-
-    if (std.mem.eql(u8, pattern_a, pattern_b)) {
-        return std.mem.lessThan(u8, b.source.value, a.source.value);
-    }
-
-    return std.mem.lessThan(u8, pattern_b, pattern_a);
-}
-
 pub fn format(allocator: std.mem.Allocator, imports: *const std.ArrayList(ImportDeclarationAst)) !void {
-    std.mem.sort(ImportDeclarationAst, imports.*.items, {}, compare);
-    // find last slash and remove rest
-    // remove relative prefix
-    // loop through all imports and put to hash map
-    // '@app/core': ArrayList({'@app/core/ui-kit', '@app/core/test'})
-
     try write(allocator, imports);
 }
 

@@ -22,6 +22,11 @@ fn compare(context: void, a: ImportDeclarationAst, b: ImportDeclarationAst) bool
 
 pub fn format(allocator: std.mem.Allocator, imports: *const std.ArrayList(ImportDeclarationAst)) !void {
     std.mem.sort(ImportDeclarationAst, imports.*.items, {}, compare);
+    // find last slash and remove rest
+    // remove relative prefix
+    // loop through all imports and put to hash map
+    // '@app/core': ArrayList({'@app/core/ui-kit', '@app/core/test'})
+
     try write(allocator, imports);
 }
 

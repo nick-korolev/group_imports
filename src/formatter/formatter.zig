@@ -1,7 +1,27 @@
 const std = @import("std");
 const ImportDeclarationAst = @import("../ast/ast.zig").ImportDeclarationAst;
 
+fn get_pattern(allocator: std.mem.Allocator, import: *const ImportDeclarationAst) ![]const u8 {
+    var it = std.mem.splitAny(u8, import.source.raw_value, "/");
+    var pattern = std.ArrayList(u8).init(allocator);
+    const first = it.next();
+    if (first) |first_value| {
+        try pattern.appendSlice(first_value);
+    }
+
+    const second = it.next();
+    if (second) |second_value| {
+        try std.fmt.format(pattern.writer(), "/{s}", .{second_value});
+    }
+
+    return pattern.items;
+}
+
 pub fn format(allocator: std.mem.Allocator, imports: *const std.ArrayList(ImportDeclarationAst)) !void {
+    for (imports.items) |import| {
+        const pattern = try get_pattern(allocator, &import);
+        std.debug.print("pattern: {s}\n", .{pattern});
+    }
     try write(allocator, imports);
 }
 

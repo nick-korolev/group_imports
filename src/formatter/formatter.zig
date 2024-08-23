@@ -4,6 +4,7 @@ const ImportDeclarationAst = @import("../ast/ast.zig").ImportDeclarationAst;
 fn get_pattern(allocator: std.mem.Allocator, import: *const ImportDeclarationAst) ![]const u8 {
     var it = std.mem.splitAny(u8, import.source.raw_value, "/");
     var pattern = std.ArrayList(u8).init(allocator);
+
     const first = it.next();
     if (first) |first_value| {
         try pattern.appendSlice(first_value);
@@ -32,6 +33,7 @@ pub fn format(allocator: std.mem.Allocator, imports: *const std.ArrayList(Import
     while (it.next()) |pattern| {
         try pattern_array.append(pattern.*);
     }
+
     std.mem.sort([]const u8, pattern_array.items, {}, struct {
         fn lessThan(_: void, a: []const u8, b: []const u8) bool {
             return std.mem.lessThan(u8, b, a);
